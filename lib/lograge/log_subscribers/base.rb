@@ -17,34 +17,31 @@ module Lograge
         return if Lograge.ignore?(event)
 
         payload = event.payload
-        data = extract_request(event, payload)
+        data = initial_data(payload)
+        extract_request(data, event, payload)
         data = before_format(data, payload)
         formatted_message = Lograge.formatter.call(data)
         logger.send(Lograge.log_level, formatted_message)
       end
 
-      def extract_request(event, payload)
-        data = initial_data(payload)
-        data.merge!(extract_status(payload))
-        data.merge!(extract_runtimes(event, payload))
-        data.merge!(extract_location)
-        data.merge!(extract_unpermitted_params)
-        data.merge!(custom_options(event))
+      def extract_request(data, event, payload)
+        extract_status(data, payload)
+        custom_options(data, event)
       end
 
-      %i(initial_data extract_status extract_runtimes
-         extract_location extract_unpermitted_params).each do |method_name|
-        define_method(method_name) { |*_arg| {} }
+      def initial_data(_payload)
+        raise 'not implemented'
       end
 
-      def extract_status(payload)
+      def extract_status(data, payload)
         if (status = payload[:status])
-          { status: status.to_i }
+          data[:status] = status.to_i
         elsif (error = payload[:exception])
           exception, message = error
-          { status: get_error_status_code(exception), error: "#{exception}: #{message}" }
+          data[:status] = get_error_status_code(exception)
+          data[:error] = "#{exception}: #{message}"
         else
-          { status: default_status }
+          data[:status] = default_status
         end
       end
 
@@ -57,9 +54,14 @@ module Lograge
         Rack::Utils.status_code(status)
       end
 
-      def custom_options(event)
-        options = Lograge.custom_options(event) || {}
-        options.merge event.payload[:custom_payload] || {}
+      def custom_options(data, event)
+        options = Lograge.custom_options(event).dup || {}
+
+        if (custom_payload = event.payload[:custom_payload])
+          options.merge!(custom_payload)
+        end
+
+        data.merge!(options)
       end
 
       def before_format(data, payload)

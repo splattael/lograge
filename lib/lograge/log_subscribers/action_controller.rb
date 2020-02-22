@@ -16,6 +16,13 @@ module Lograge
 
       private
 
+      def extract_request(data, event, payload)
+        super
+        extract_runtimes(data, event, payload)
+        extract_location(data)
+        extract_unpermitted_params(data)
+      end
+
       def initial_data(payload)
         {
           method: payload[:method],
@@ -46,27 +53,28 @@ module Lograge
         end
       end
 
-      def extract_runtimes(event, payload)
-        data = { duration: event.duration.to_f.round(2) }
+      def extract_runtimes(data, event, payload)
+        payload = event.payload
+        data[:duration] = event.duration.to_f.round(2)
         data[:view] = payload[:view_runtime].to_f.round(2) if payload.key?(:view_runtime)
         data[:db] = payload[:db_runtime].to_f.round(2) if payload.key?(:db_runtime)
-        data
       end
 
-      def extract_location
+      def extract_location(data)
         location = RequestStore.store[:lograge_location]
-        return {} unless location
+        return unless location
 
         RequestStore.store[:lograge_location] = nil
-        { location: strip_query_string(location) }
+        data[:location] = strip_query_string(location)
       end
 
-      def extract_unpermitted_params
+      def extract_unpermitted_params(data)
         unpermitted_params = RequestStore.store[:lograge_unpermitted_params]
-        return {} unless unpermitted_params
+        return unless unpermitted_params
 
         RequestStore.store[:lograge_unpermitted_params] = nil
-        { unpermitted_params: unpermitted_params }
+
+        data[:unpermitted_params] = unpermitted_params
       end
     end
   end

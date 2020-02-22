@@ -9,6 +9,11 @@ module Lograge
 
       private
 
+      def extract_request(data, event, _payload)
+        super
+        extract_runtimes(data, event)
+      end
+
       def initial_data(payload)
         {
           method: {},
@@ -24,8 +29,8 @@ module Lograge
         200
       end
 
-      def extract_runtimes(event, _payload)
-        { duration: event.duration.to_f.round(2) }
+      def extract_runtimes(data, event)
+        data[:duration] = event.duration.to_f.round(2)
       end
     end
   end
