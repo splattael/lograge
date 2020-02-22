@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './lib/lograge/version'
 
 Gem::Specification.new do |s|

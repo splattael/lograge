@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'lograge/formatters/key_value'
 
 module Lograge

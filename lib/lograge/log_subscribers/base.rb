@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'json'
 require 'action_pack'
 require 'active_support/core_ext/class/attribute'

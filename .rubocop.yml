@@ -13,3 +13,6 @@ Metrics/AbcSize:
 
 Style/EmptyMethod:
   Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: true

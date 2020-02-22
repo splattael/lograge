@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'lograge/version'
 require 'lograge/formatters/helpers/method_and_path'
 require 'lograge/formatters/cee'
